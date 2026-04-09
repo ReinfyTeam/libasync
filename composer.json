@@ -1,5 +1,5 @@
 {
-    "name": "blackjack200/libasync",
+    "name": "reinfyteam/libasync",
     "type": "library",
     "autoload": {
         "psr-4": {
@@ -12,6 +12,10 @@
         {
             "name": "Blackjack200",
             "email": "lx826444126@gmail.com"
+        },
+        {
+            "name": "ReinfyTeam",
+            "email": "reinfyteam@gmail.com"
         }
     ],
     "require": {
