@@ -20,5 +20,11 @@
     ],
     "require": {
         "opis/closure": "^4.3"
+    },
+    "extra": {
+        "virion": {
+            "spec": "3.0",
+            "namespace-root": "blackjack200\\libasync"
+        }
     }
 }
