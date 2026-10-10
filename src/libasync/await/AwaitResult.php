@@ -144,7 +144,12 @@ class AwaitResult {
 			try {
 				if ($sender instanceof Player && $sender->isOnline()) {
 					if (class_exists(StringFormat::class)) {
-						$sender->sendMessage(StringFormat::error('async error encountered'));
+						$message = StringFormat::error('async error encountered');
+						if (is_string($message)) {
+							$sender->sendMessage($message);
+						} else {
+							$sender->sendMessage(TextFormat::DARK_RED . 'async error encountered');
+						}
 					} else {
 						$sender->sendMessage(TextFormat::DARK_RED . 'async error encountered');
 					}
