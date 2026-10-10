@@ -49,7 +49,7 @@ use const bootstrap\PRODUCTION;
  */
 class AsyncExecutionEnvironment extends ThreadSafe {
 	/**
-	 * @param Closure():array $argsCtor Closure that returns an array of arguments/resources
+	 * @param Closure():array<int, mixed> $argsCtor Closure that returns an array of arguments/resources
 	 * @param Closure(mixed...):void $argsDtor Closure to destroy the arguments/resources
 	 */
 	public function __construct(
@@ -108,7 +108,11 @@ class AsyncExecutionEnvironment extends ThreadSafe {
 	public static function simple(Closure $new, Closure $free) : self {
 		return new AsyncExecutionEnvironment(
 			static fn() : array => [$new()],
-			static fn($n) => $free($n),
+			static function(mixed ...$args) use ($free) : void {
+				foreach ($args as $arg) {
+					$free($arg);
+				}
+			},
 		);
 	}
 }
