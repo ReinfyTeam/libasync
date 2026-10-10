@@ -19,7 +19,7 @@ final class Await {
 
 	/**
 	 * @param resource $stream
-	 * @return Generator<void,mixed,void,string>
+	 * @return Generator<int,mixed,void,string>
 	 */
 	public static function stream($stream) : Generator {
 		$buffer = '';
@@ -50,12 +50,13 @@ final class Await {
 	 * Converts a closure into a generator for asynchronous execution.
 	 *
 	 * @template T
-	 * @param Closure():T $f The closure to convert.
-	 * @return Generator<void,mixed,void,T> The generator that yields from the closure result.
+	 * @param Closure():T|Generator<int,mixed,mixed,T> $f The closure to convert.
+	 * @return Generator<int,mixed,mixed,T> The generator that yields from the closure result.
 	 */
 	public static function f2c(Closure $f) : Generator {
 		$v = $f();
 		if ($v instanceof Generator) {
+			/** @var Generator<int,mixed,mixed,T> $v */
 			return yield from $v;
 		}
 		return $v;
@@ -64,8 +65,8 @@ final class Await {
 	/**
 	 * Traps execution and allows manual control through the given trap callback.
 	 *
-	 * @param Closure $trap The trap callback that is executed when trapped.
-	 * @return Generator<void,mixed,void,void>  Yields a trap signal and executes the trap.
+	 * @param Closure():bool $trap The trap callback that is executed when trapped.
+	 * @return Generator<int,mixed,void,void> Yields a trap signal and executes the trap.
 	 */
 	public static function trap(Closure $trap) : Generator {
 		yield AwaitSignal::SIG_TRAP;
@@ -76,7 +77,7 @@ final class Await {
 	 * Delays execution by the given number of seconds.
 	 *
 	 * @param int $sec The number of seconds to delay.
-	 * @return Generator The generator that yields a delay signal.
+	 * @return Generator<int,mixed,void,void> The generator that yields a delay signal.
 	 */
 	public static function delay(int $sec) : Generator {
 		yield from self::udelay($sec * 1000);
@@ -86,7 +87,7 @@ final class Await {
 	 * Delays execution by the given number of microseconds.
 	 *
 	 * @param int $microseconds The number of microseconds to delay.
-	 * @return Generator<void,mixed,void,void>  The generator that yields a delay signal.
+	 * @return Generator<int,mixed,void,void> The generator that yields a delay signal.
 	 */
 	public static function udelay(int $microseconds) : Generator {
 		yield from self::ndelay($microseconds * 1000 * 1000);
@@ -97,7 +98,7 @@ final class Await {
 	 * Uses a busy-wait loop to achieve the delay.
 	 *
 	 * @param int $nanoseconds The number of nanoseconds to delay.
-	 * @return Generator<void,mixed,void,void>  The generator that yields a wait signal until the target time is reached.
+	 * @return Generator<int,mixed,void,void> The generator that yields a wait signal until the target time is reached.
 	 */
 	public static function ndelay(int $nanoseconds) : Generator {
 		$targetTime = hrtime(true) + $nanoseconds;
@@ -111,10 +112,10 @@ final class Await {
 	 * Executes a tick operation for a specified number of times at fixed intervals.
 	 * Allows cancellation of the tick operation.
 	 *
-	 * @param Closure $do The callback to execute on each tick.
+	 * @param Closure(Closure():void):void $do The callback to execute on each tick.
 	 * @param int $tick The interval (in milliseconds) between each tick.
 	 * @param int $times The number of ticks to execute.
-	 * @return Generator<void,mixed,void,void>  The generator that executes the tick operations.
+	 * @return Generator<int,mixed,void,void> The generator that executes the tick operations.
 	 */
 	public static function tick(Closure $do, int $tick, int $times) : Generator {
 		$c = true;
@@ -131,11 +132,11 @@ final class Await {
 	 * Executes a block of code asynchronously in a separate thread.
 	 * Handles any exceptions that might occur during execution.
 	 *
-	 * @template T
-	 * @param Closure():T $do The closure to execute asynchronously.
+	 * @template T of (scalar|null|\pmmp\thread\ThreadSafe|\pmmp\thread\ThreadSafeArray)
+	 * @param Closure(mixed ...):T $do The closure to execute asynchronously.
 	 * @param AsyncRuntime|null $runtime The runtime environment to use.
 	 * @param AsyncExecutionEnvironment|null $env The execution environment to use.
-	 * @return Generator<void,mixed,void,T>|T The result of the asynchronous execution.
+	 * @return Generator<int,mixed,mixed,T|null> The result of the asynchronous execution.
 	 * @generator-throw ExecutionException If execution fails.
 	 */
 	public static function threadify(Closure $do, ?AsyncRuntime $runtime = null, ?AsyncExecutionEnvironment $env = null) {
@@ -144,7 +145,9 @@ final class Await {
 		$rec = $runtime->runAsync($do, $env);
 
 		yield AwaitSignal::SIG_NOTIFIED;
-		yield static fn($notifier) => $rec->setNotifier($notifier);
+		yield static function(Closure $notifier) use ($rec) : void {
+		$rec->setNotifier($notifier);
+	};
 
 		yield AwaitSignal::SIG_EXCEPTION;
 		yield [$rec->getCallTrace(), $rec->getError()];

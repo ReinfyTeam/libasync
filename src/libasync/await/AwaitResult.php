@@ -59,11 +59,12 @@ use const bootstrap\PRODUCTION;
  */
 class AwaitResult {
 	protected bool $join = true;
+	/** @var array<int|string, string> */
 	private array $stackTrace;
 	private bool $errorHandled = false;
 
 	/**
-	 * @param Closure(?Closure $errorHandler,bool $joined):Coroutine $createCoroutine
+	 * @param Closure(?Closure(Throwable):void $errorHandler,bool $joined):Coroutine $createCoroutine
 	 * @param Closure(Coroutine $coroutine):void $onCreation
 	 */
 	public function __construct(
@@ -118,6 +119,7 @@ class AwaitResult {
 	/**
 	 * @see self::panic()
 	 */
+	/** @param Closure(Throwable):void|null $do */
 	public function logError(?Closure $do = null) : void {
 		$this->error(static function(Throwable $thr) use ($do) : void {
 			if (!$thr instanceof ExecutionException) {
@@ -131,6 +133,7 @@ class AwaitResult {
 		});
 	}
 
+	/** @param Closure(Throwable):void|null $do */
 	public function logErrorWithSender(CommandSender $sender, ?Closure $do = null) : void {
 		$this->error(static function(Throwable $thr) use ($do, $sender) {
 			if ($thr instanceof ExecutionException) {
