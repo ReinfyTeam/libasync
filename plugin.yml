@@ -1,5 +1,5 @@
 name: libasync
-version: 0.8.2
+version: 0.8.3
 api: 5.0.0
 main: libasync\AsyncLoader
 src-namespace-prefix: ""
