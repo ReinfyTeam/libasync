@@ -1,0 +1,42 @@
+name: Analyze PHP code with PHPStan
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  phpstan:
+    name: Run PHPStan at maximum level
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up PHP environment
+        uses: shivammathur/setup-php@16011a795d747d5f45038f96371c3b98aec5669d
+        with:
+          php-version: "8.2"
+
+      - name: Restore Composer package cache
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c
+        with:
+          path: ~/.cache/composer
+          key: php-8.2-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: php-8.2-composer-
+
+      - name: Validate Composer metadata
+        run: composer validate --strict --no-interaction
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --ignore-platform-reqs
+
+      - name: Lint PHP source files
+        shell: bash
+        run: git ls-files '*.php' -z | xargs -0 -r -n1 php -l
+
+      - name: Run PHPStan at maximum level
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress

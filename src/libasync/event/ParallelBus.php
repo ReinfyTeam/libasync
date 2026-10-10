@@ -23,6 +23,11 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 		$this->handler = new ThreadSafeArray();
 	}
 
+	/** @return ThreadSafeArray<int, Closure(T):void> */
+	private function createHandlerBucket(): ThreadSafeArray {
+		return ThreadSafeArray::fromArray([]);
+	}
+
 	public function process() : void {
 		/** @var array<int, array{0: Closure(T):void, 1:T}> $pending */
 		$pending = [];
@@ -54,13 +59,14 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 		return $this->handler->synchronized(function() use ($handler) : Closure {
 			$combine = [];
 			$id = spl_object_id($handler);
+			$handlerMap = $this->handler;
 			foreach (ClosureUtils::parseSubscriber($handler) as $type) {
 				if (!isset($this->handler[$type])) {
-					$this->handler[$type] = new ThreadSafeArray();
+					$this->handler[$type] = $this->createHandlerBucket();
 				}
 				$this->handler[$type][$id] = $handler;
-				$combine[] = function() use ($id, $type) {
-					unset($this->handler[$type][$id]);
+				$combine[] = static function() use ($handlerMap, $id, $type): void {
+					unset($handlerMap[$type][$id]);
 				};
 			}
 			return static function() use ($combine) {

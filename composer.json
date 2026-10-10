@@ -3,9 +3,17 @@
     "type": "library",
     "description": "Asynchronous runtime and coroutine tools for PocketMine-MP and PHP projects",
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/axolotl-pm/PocketMine-MP",
+            "no-api": true
+        }
+    ],
     "autoload": {
         "psr-4": {
-            "": "src"
+            "libasync\\": "src/libasync",
+            "phantom\\": "src/phantom"
         }
     },
     "authors": [
@@ -22,6 +30,12 @@
         "opis/closure": "^4.3",
         "php": "^8.2"
     },
+    "require-dev": {
+        "axolotl-pm/pocketmine-mp": "dev-stable",
+        "phpstan/phpstan": "^2.3"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "extra": {
         "virion": {
             "spec": "3.0",

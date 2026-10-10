@@ -17,6 +17,11 @@ class ParalleledTopicBus extends ThreadSafe {
 		$this->handler = new ThreadSafeArray();
 	}
 
+	/** @return ThreadSafeArray<int, Closure(mixed...):void> */
+	private function createHandlerBucket(): ThreadSafeArray {
+		return ThreadSafeArray::fromArray([]);
+	}
+
 	public function process() : void {
 		$pending = [];
 		$this->buffer->synchronized(function() use (&$pending) : void {
@@ -50,7 +55,7 @@ class ParalleledTopicBus extends ThreadSafe {
 	public function subscribe(string $topic, Closure $handler) : void {
 		$this->handler->synchronized(function() use ($topic, $handler) : void {
 			if (!isset($this->handler[$topic])) {
-				$this->handler[$topic] = new ThreadSafeArray();
+				$this->handler[$topic] = $this->createHandlerBucket();
 			}
 			$this->handler[$topic][] = $handler;
 		});

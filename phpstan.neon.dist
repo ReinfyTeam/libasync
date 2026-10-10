@@ -1,0 +1,8 @@
+parameters:
+    level: max
+    phpVersion: 80200
+    treatPhpDocTypesAsCertain: false
+    paths:
+        - src
+    stubFiles:
+        - stubs/pmmp-thread.php
