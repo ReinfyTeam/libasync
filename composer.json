@@ -1,11 +1,11 @@
 {
     "name": "reinfyteam/libasync",
     "type": "library",
+    "description": "Asynchronous runtime and coroutine tools for PocketMine-MP and PHP projects",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
-            "": [
-                "src"
-            ]
+            "": "src"
         }
     },
     "authors": [

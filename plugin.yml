@@ -2,3 +2,4 @@ name: libasync
 version: 0.8.1
 api: 5.0.0
 main: libasync\AsyncLoader
+src-namespace-prefix: ""

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e19375e8fcfa1fa2f03f4982c9b53835",
+    "content-hash": "a96bbb54240a64c2a8fae9afb0168526",
     "packages": [
         {
             "name": "opis/closure",
@@ -79,5 +79,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
