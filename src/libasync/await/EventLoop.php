@@ -16,9 +16,9 @@ interface EventLoop {
 	/**
 	 * Adds a new task to the event loop.
 	 *
-	 * @param Closure(Closure $break,Closure $changeToWakeupMode):void $c The task to be executed.
+	 * @param Closure(Closure():void,Closure():Closure):void $c The task to be executed.
 	 * @param int $timeoutMicrosecond The timeout for the task in seconds (default is PHP_INT_MAX).
-	 * @param Closure|null $onTimeout The handler for the timeout event (optional).
+	 * @param null|Closure(float):void $onTimeout The handler for the timeout event (optional).
 	 *
 	 * @return EventLoopTask The created EventLoopTask object.
 	 */

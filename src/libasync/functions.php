@@ -31,7 +31,7 @@ namespace libasync {
 	 * // $result will be 42
 	 * ```
 	 *
-	 * @param Closure|Generator $block The closure or generator to run asynchronously.
+	 * @param Closure():Generator|Generator $block The closure or generator to run asynchronously.
 	 * @param EventLoop|null $loop Optional event loop to attach the task to.
 	 * @return AwaitResult Async result wrapper.
 	 * @throws \InvalidArgumentException if $block holds a cyclic reference to $loop
@@ -96,7 +96,7 @@ namespace libasync {
 	 * });
 	 * ```
 	 *
-	 * @param Closure $c Closure that returns a boolean; returning `false` interrupts the coroutine.
+	 * @param Closure():bool $c Closure that returns a boolean; returning `false` interrupts the coroutine.
 	 * @throws \RuntimeException If no coroutine is running in this context.
 	 */
 	function trap(Closure $c) : void {
@@ -125,7 +125,7 @@ namespace libasync {
 	 * // second cleanup
 	 * ```
 	 *
-	 * @param Closure $c The closure to defer.
+	 * @param Closure():void $c The closure to defer.
 	 * @return void
 	 * @throws \RuntimeException If no coroutine is running in this context.
 	 */
@@ -236,7 +236,7 @@ namespace libasync {
 	 * delay(static fn() => echo "hello", 10); // will run at least after 10 ticks
 	 * ```
 	 *
-	 * @param Closure $func The closure to delay.
+	 * @param Closure():mixed $func The closure to delay.
 	 * @param int $tick Number of ticks to delay (1 tick = 50ms).
 	 * @return AwaitResult The async result wrapper.
 	 */
