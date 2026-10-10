@@ -6,3 +6,5 @@ parameters:
         - src
     stubFiles:
         - stubs/pmmp-thread.php
+    scanFiles:
+        - stubs/pmmp-thread.php

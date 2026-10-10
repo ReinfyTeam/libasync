@@ -46,7 +46,6 @@ class ParalleledTopicBus extends ThreadSafe {
 			});
 		});
 		foreach ($pending as [$handler, $val]) {
-			assert($handler instanceof Closure);
 			$handler(...$val);
 		}
 	}

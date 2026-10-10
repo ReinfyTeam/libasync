@@ -2,6 +2,10 @@
 
 namespace pmmp\thread;
 
+class Thread {
+	public static function getCurrentThreadId(): int {}
+}
+
 class ThreadSafe {
 	/**
 	 * @template TResult

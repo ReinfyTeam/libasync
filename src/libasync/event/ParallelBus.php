@@ -57,6 +57,7 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 	public function subscribe(Closure $handler) : Closure {
 		ClosureUtils::validateThreadSafety($handler);
 		return $this->handler->synchronized(function() use ($handler) : Closure {
+			/** @var list<Closure():void> $combine */
 			$combine = [];
 			$id = spl_object_id($handler);
 			$handlerMap = $this->handler;
@@ -69,7 +70,7 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 					unset($handlerMap[$type][$id]);
 				};
 			}
-			return static function() use ($combine) {
+			return static function() use ($combine): void {
 				foreach ($combine as $x) {
 					$x();
 				}
