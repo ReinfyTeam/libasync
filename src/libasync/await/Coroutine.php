@@ -23,14 +23,17 @@ class Coroutine {
 	public static ?self $RUNNING = null;
 	/** @var array<int,self> */
 	public static array $joinedCoroutine = [];
+	/** @var array<int|string, string> */
 	private readonly array $callTrace;
 	private readonly string $name;
 	/** @var (Closure():bool)[] */
 	private array $trapHandlers = [];
     /** @var (Closure():void)[] */
     private array $deferHandlers = [];
-    private ?WeakReference $taskRef = null;
+	/** @var WeakReference<EventLoopTask>|null */
+	private ?WeakReference $taskRef = null;
 
+	/** @param Closure(Throwable):void|null $errorHandler */
 	public function __construct(
 		private Generator $generator,
 		private ?Closure  $errorHandler,
@@ -53,6 +56,10 @@ class Coroutine {
 		$caller = $trace[self::SKIP_FRAMES] ?? null;
 
 		if ($caller === null) {
+			return 'Unknown';
+		}
+
+		if (!isset($caller['file'], $caller['line'])) {
 			return 'Unknown';
 		}
 
@@ -149,21 +156,47 @@ class Coroutine {
 	private function handleNotifiedSignal(Generator $gen, Closure $wakeupMode) : void {
 		$gen->next();
 		$notifier = $gen->current();
+		if (!$notifier instanceof Closure) {
+			throw new \UnexpectedValueException('Coroutine notification signal did not provide a closure');
+		}
 		$notifier($wakeupMode());
 	}
 
 	private function handleExceptionSignal(Generator $gen) : void {
 		$gen->next();
-		[$callTrace, $exception] = $gen->current();
+		$value = $gen->current();
+		if (!is_array($value) || !array_key_exists(0, $value) || !array_key_exists(1, $value)) {
+			throw new \UnexpectedValueException('Coroutine exception signal has an invalid payload');
+		}
+		$callTrace = $value[0];
+		$exception = $value[1];
+		if (!is_array($callTrace)) {
+			throw new \UnexpectedValueException('Coroutine exception signal has an invalid call trace');
+		}
+		/** @var array<int|string, string> $validatedCallTrace */
+		$validatedCallTrace = [];
+		foreach ($callTrace as $key => $frame) {
+			if (!is_string($frame)) {
+				throw new \UnexpectedValueException('Coroutine exception signal has a non-string call trace frame');
+			}
+			$validatedCallTrace[$key] = $frame;
+		}
+		if ($exception !== null && !$exception instanceof ExecutionExceptionWrapper) {
+			throw new \UnexpectedValueException('Coroutine exception signal has an invalid exception wrapper');
+		}
 
 		if ($exception !== null) {
-			$gen->throw(new ExecutionException($exception, $callTrace));
+			$gen->throw(new ExecutionException($exception, $validatedCallTrace));
 		}
 	}
 
 	private function handleTrapSignal(Generator $gen) : void {
 		$gen->next();
-		$this->trapHandlers[] = $gen->current();
+		$trap = $gen->current();
+		if (!$trap instanceof Closure) {
+			throw new \UnexpectedValueException('Coroutine trap signal did not provide a closure');
+		}
+		$this->trapHandlers[] = $trap;
 	}
 
 	private function terminate(Closure $break) : void {
@@ -190,8 +223,9 @@ class Coroutine {
 		}
 	}
 
+	/** @param array<int|string, string> $callTrace */
 	private static function logCrash(Throwable $thr, array $callTrace) : void {
-		$x = array_map(static fn($ttr) => new ThreadCrashInfoFrame($ttr, 'unknown', 0), $callTrace);
+		$x = array_map(static fn(string $trace) => new ThreadCrashInfoFrame($trace, 'unknown', 0), $callTrace);
 		if ($thr instanceof ExecutionException) {
 			$thr->printWithCallTrace(GlobalLogger::get());
 			$wrapper = $thr->getWrapper();
