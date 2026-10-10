@@ -19,7 +19,8 @@
         }
     ],
     "require": {
-        "opis/closure": "^4.3"
+        "opis/closure": "^4.3",
+        "php": "^8.2"
     },
     "extra": {
         "virion": {

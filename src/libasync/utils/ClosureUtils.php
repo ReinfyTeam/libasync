@@ -9,6 +9,7 @@ use Opis\Closure\Serializer;
 use pmmp\thread\ThreadSafe;
 use pmmp\thread\ThreadSafeArray;
 use ReflectionFunction;
+use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionUnionType;
 use const bootstrap\PRODUCTION;
@@ -59,25 +60,37 @@ final class ClosureUtils {
 		}
 	}
 
-	private static function validateType(\ReflectionType|\ReflectionNamedType|\ReflectionIntersectionType|\ReflectionUnionType $typ) : void {
-		$types = [];
-		if ($typ instanceof \ReflectionNamedType) {
-			$types = [$typ];
+	private static function validateType(\ReflectionType $type) : void {
+		if ($type instanceof ReflectionNamedType) {
+			self::validateNamedType($type);
+			return;
 		}
-		if ($typ instanceof \ReflectionUnionType) {
-			$types = $typ->getTypes();
+		if ($type instanceof ReflectionUnionType) {
+			foreach ($type->getTypes() as $namedType) {
+				if ($namedType instanceof ReflectionNamedType) {
+					self::validateNamedType($namedType);
+				}
+			}
+			return;
 		}
-		if ($typ instanceof \ReflectionIntersectionType) {
-			$types = $typ->getTypes();
+		if ($type instanceof ReflectionIntersectionType) {
+			foreach ($type->getTypes() as $namedType) {
+				if ($namedType instanceof ReflectionNamedType) {
+					self::validateNamedType($namedType);
+				}
+			}
+			return;
 		}
-		foreach ($types as $type) {
-			if (!$type->isBuiltin() && !in_array($type->getName(), [
+		throw new \InvalidArgumentException("invalid reflection type");
+	}
+
+	private static function validateNamedType(ReflectionNamedType $type) : void {
+		if (!$type->isBuiltin() && !in_array($type->getName(), [
 					ThreadSafe::class,
 					ThreadSafeArray::class,
 					\Closure::class,
 				], true)) {
-				throw new \RuntimeException("invalid param {$type->getName()}");
-			}
+			throw new \RuntimeException("invalid param {$type->getName()}");
 		}
 	}
 
@@ -95,12 +108,20 @@ final class ClosureUtils {
 		if ($type === null) {
 			throw new InvalidArgumentException("invalid param with no type specified");
 		}
-		$types = match (true) {
-			$type instanceof ReflectionNamedType => [$type],
-			$type instanceof ReflectionUnionType => $type->getTypes()
-		};
+		/** @var list<ReflectionNamedType> $types */
+		$types = [];
+		if ($type instanceof ReflectionNamedType) {
+			$types = [$type];
+		} elseif ($type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType) {
+			$types = $type->getTypes();
+		} else {
+			throw new InvalidArgumentException("invalid reflection type");
+		}
 		$arr = [];
 		foreach ($types as $t) {
+			if (!$t instanceof ReflectionNamedType) {
+				throw new InvalidArgumentException("invalid reflection type");
+			}
 			$arr[] = $t->getName();
 		}
 		return $arr;
@@ -158,6 +179,7 @@ final class ClosureUtils {
 		}
 	}
 
+	/** @param array<int, true> $seen */
 	private static function containsObject(mixed $value, object $root, array &$seen = []) : bool {
 		if (is_object($value)) {
 			$oid = spl_object_id($value);
@@ -170,12 +192,16 @@ final class ClosureUtils {
 				return true;
 			}
 
-			if (array_any((array) $value, static fn($prop) => self::containsObject($prop, $root, $seen))) {
-				return true;
+			foreach ((array) $value as $property) {
+				if (self::containsObject($property, $root, $seen)) {
+					return true;
+				}
 			}
 		} else if (is_array($value)) {
-			if (array_any($value, static fn($v) => self::containsObject($v, $root, $seen))) {
-				return true;
+			foreach ($value as $item) {
+				if (self::containsObject($item, $root, $seen)) {
+					return true;
+				}
 			}
 		}
 		return false;

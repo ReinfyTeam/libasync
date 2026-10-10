@@ -62,7 +62,7 @@ class AsyncLoader extends PluginBase {
 	protected function onDisable() : void {
 		$tck = Server::getInstance()->getTick();
 		$timeout = microtime(true) + 30;
-		while (!empty(Coroutine::$joinedCoroutine)) {
+		while (Coroutine::$joinedCoroutine !== []) {
 			$this->getScheduler()->mainThreadHeartbeat($tck++);
 			$this->pool->collectTasks();
 			if (microtime(true) > $timeout) {

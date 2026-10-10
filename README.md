@@ -6,6 +6,23 @@ multitasking**, cooperative coroutines, and even multi-thread/multi-process exec
 code
 changes**.
 
+## Requirements and installation
+
+- PHP 8.2 or later.
+- PocketMine-MP API 5 when using the bundled `AsyncLoader` plugin entry point.
+- The Composer dependency `opis/closure` for closure serialization.
+
+Install the library in a PHP project with Composer:
+
+```text
+composer require reinfyteam/libasync
+```
+
+For PocketMine-MP, load the plugin through the project's supported plugin or
+virion packaging workflow. The build metadata is still being validated against
+[DevTools](https://github.com/NhanAZ/DevTools); the current repository does not
+claim that a standalone PHAR can automatically bundle every Composer package.
+
 > NTS Ready LITERALLY, you can use libasync without `ext-pthread` and `ext-pmmpthread` with a true `process`, you don't
 > need any extra work.
 

@@ -92,11 +92,13 @@ final readonly class Weak {
 		$this->____________________ref = WeakReference::create($obj);
 	}
 
-	public static function __callStatic(string $name, array $arguments) {
+	/** @param array<int, mixed> $arguments */
+	public static function __callStatic(string $name, array $arguments) : mixed {
 		throw new \BadMethodCallException("you should not call this at all time.",);
 	}
 
-	public static function __set_state(array $an_array) : self {
+	/** @param array<string, mixed> $an_array */
+	public static function __set_state(array $an_array) : object {
 		throw new \BadMethodCallException("you should not call this at all time.",);
 	}
 
@@ -107,7 +109,8 @@ final readonly class Weak {
 		return $this->____________________ref->get() ?? throw new LifetimeError("source object doesn't live long enough");
 	}
 
-	public function __call(string $name, array $arguments) {
+	/** @param array<int, mixed> $arguments */
+	public function __call(string $name, array $arguments) : mixed {
 		$obj = $this->____________________ref->get();
 		if ($obj === null) {
 			throw new LifetimeError("source object doesn't live long enough");
@@ -122,7 +125,8 @@ final readonly class Weak {
 		}
 	}
 
-	public function __debugInfo() : ?array {
+	/** @return array<int, mixed> */
+	public function __debugInfo() : array {
 		$obj = $this->____________________ref->get();
 		if ($obj === null) {
 			throw new LifetimeError("source object doesn't live long enough");
@@ -130,7 +134,7 @@ final readonly class Weak {
 		return [$obj];
 	}
 
-	public function &__get(string $name) {
+	public function &__get(string $name) : mixed {
 		$obj = $this->____________________ref->get();
 		if ($obj === null) {
 			throw new LifetimeError("source object doesn't live long enough");
@@ -141,7 +145,7 @@ final readonly class Weak {
 		return $call;
 	}
 
-	public function __set(string $name, $value) : void {
+	public function __set(string $name, mixed $value) : void {
 		$obj = $this->____________________ref->get();
 		if ($obj === null) {
 			throw new LifetimeError("source object doesn't live long enough");
@@ -149,10 +153,14 @@ final readonly class Weak {
 		(fn() => $this->$name = $value)->call($obj);
 	}
 
-	public function __invoke(...$args) {
+	/** @param array<int, mixed> $args */
+	public function __invoke(...$args) : mixed {
 		$obj = $this->____________________ref->get();
 		if ($obj === null) {
 			throw new LifetimeError("source object doesn't live long enough");
+		}
+		if (!is_callable($obj)) {
+			throw new \BadMethodCallException("source object is not invokable");
 		}
 		return (fn() => $this(...$args))->call($obj);
 	}
@@ -165,10 +173,12 @@ final readonly class Weak {
 		return (fn() => isset($this->$name))->call($obj);
 	}
 
+	/** @return array<string, mixed> */
 	public function __serialize() : array {
 		throw new \BadMethodCallException("you should not call this at all time.",);
 	}
 
+	/** @return array<int, string> */
 	public function __sleep() : array {
 		throw new \BadMethodCallException("you should not call this at all time.",);
 	}
@@ -178,9 +188,13 @@ final readonly class Weak {
 		if ($obj === null) {
 			throw new LifetimeError("source object doesn't live long enough");
 		}
-		return $obj->__toString();
+		if (!$obj instanceof \Stringable) {
+			throw new \BadMethodCallException("source object is not stringable");
+		}
+		return (string) $obj;
 	}
 
+	/** @param array<string, mixed> $data */
 	public function __unserialize(array $data) : void {
 		throw new \BadMethodCallException("you should not call this at all time.",);
 	}
@@ -190,7 +204,7 @@ final readonly class Weak {
 		if ($obj === null) {
 			throw new LifetimeError("source object doesn't live long enough");
 		}
-		(function() : void { unset($this->$name); })->call($obj);
+		(function() use ($name) : void { unset($this->$name); })->call($obj);
 	}
 
 	public function __wakeup() : void {

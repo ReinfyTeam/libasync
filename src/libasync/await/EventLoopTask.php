@@ -11,7 +11,7 @@ class EventLoopTask {
 	private float $timeoutTime;
 
 	public function __construct(
-		/** @var Closure(Closure $cancelTask,Closure $changeToWaiting):void */
+		/** @var Closure(Closure():void, Closure():void, Closure(float):void, Closure(?Closure(float):void):void):void */
 		private Closure  $task,
 		private Closure  $cancelTask,
 		private Closure  $changeToWaiting,
