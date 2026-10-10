@@ -10,6 +10,7 @@ use libasync\await\Await;
  * @template T
  */
 class MutexRefCell {
+	/** @var ReadWriteLock<T> */
 	protected ReadWriteLock $lock;
 	/** @var T|null */
 	protected $lastWrite = null;
@@ -23,7 +24,7 @@ class MutexRefCell {
 
 	/**
 	 * @param Closure(Closure(T $v):void $set,Closure():T $get):(void|Generator) $func
-	 * @return Generator<void,void,void,bool>|bool
+	 * @return Generator<int,mixed,mixed,mixed>
 	 */
 	public function set(Closure $func) {
 		$w = $this->lock->write();
@@ -39,8 +40,7 @@ class MutexRefCell {
 	/**
 	 * @template TReturn of (Generator|mixed|null)
 	 * @param Closure(Closure(T $v):void $set,Closure():T $get):TReturn $func
-	 * @param TReturn &$result
-	 * @return Generator<void,void,void,bool>|bool
+	 * @return Generator<int,mixed,mixed,bool>
 	 */
 	public function trySet(Closure $func) : bool|Generator {
 		$w = $this->lock->write();
@@ -58,7 +58,7 @@ class MutexRefCell {
 
 	/**
 	 * @param Closure(T):(void|Generator) $func
-	 * * @return Generator<void,void,void,T|null>|T|null
+	 * @return Generator<int,mixed,mixed,T|null>
 	 */
 	public function get(Closure $func) {
 		$l = $this->lock->write();

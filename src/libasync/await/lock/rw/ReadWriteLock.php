@@ -2,7 +2,6 @@
 
 namespace libasync\await\lock\rw;
 
-use libasync\await\lock\Lock;
 
 /**
  * @template T
@@ -18,11 +17,11 @@ readonly class ReadWriteLock {
 		$this->writing = new WriteLock($write, $read);
 	}
 
-	public function read() : Lock {
+	public function read() : ReadLock {
 		return $this->reading;
 	}
 
-	public function write() : Lock {
+	public function write() : WriteLock {
 		return $this->writing;
 	}
 }
