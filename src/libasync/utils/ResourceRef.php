@@ -47,7 +47,7 @@ use Closure;
  * ```
  */
 class ResourceRef {
-	/** @var Closure|null Callback to run after resource is closed */
+	/** @var Closure(T):void|null Callback to run after resource is closed */
 	private ?Closure $onClose = null;
 
 	/**

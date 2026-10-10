@@ -103,7 +103,11 @@ class Coroutine {
         $this->taskRef = WeakReference::create($task);
     }
 
-    private function runLoopIteration(Closure $break, Closure $wakeupMode, TimingsHandler $timings, TimingsHandler $resumeTimings) : void {
+	/**
+	 * @param Closure():void $break
+	 * @param Closure():Closure $wakeupMode
+	 */
+	private function runLoopIteration(Closure $break, Closure $wakeupMode, TimingsHandler $timings, TimingsHandler $resumeTimings) : void {
         try {
             self::$RUNNING = $this;
             $timings->startTiming();
@@ -120,6 +124,7 @@ class Coroutine {
         }
     }
 
+	/** @param Closure():Closure $wakeupMode */
 	private function executeInternal(TimingsHandler $timings, TimingsHandler $resumeTimings, Closure $wakeupMode) : bool {
 		$gen = $this->generator;
 
@@ -153,6 +158,7 @@ class Coroutine {
 		return true;
 	}
 
+	/** @param Closure():Closure $wakeupMode */
 	private function handleNotifiedSignal(Generator $gen, Closure $wakeupMode) : void {
 		$gen->next();
 		$notifier = $gen->current();
@@ -199,6 +205,7 @@ class Coroutine {
 		$this->trapHandlers[] = $trap;
 	}
 
+	/** @param Closure():void $break */
 	private function terminate(Closure $break) : void {
 		if (!isset($this->generator)) {
 			return;

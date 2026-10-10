@@ -37,6 +37,10 @@ class ClassicEventLoop implements EventLoop {
 		}
 	}
 
+	/**
+	 * @param Closure(Closure():void, Closure():Closure):void $c
+	 * @param null|Closure(float):void $onTimeout
+	 */
 	public function add(Closure $c, int $timeoutMicrosecond = PHP_INT_MAX, ?Closure $onTimeout = null) : EventLoopTask {
 		$id = spl_object_id($c);
 		$weak = weak($this);

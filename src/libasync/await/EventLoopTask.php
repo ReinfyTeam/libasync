@@ -10,13 +10,17 @@ use Throwable;
 class EventLoopTask {
 	private float $timeoutTime;
 
+	/**
+	 * @param Closure(Closure():void, Closure():Closure, Closure(float):void, Closure(?Closure(float):void):void):void $task
+	 * @param Closure():void $cancelTask
+	 * @param Closure():Closure $changeToWaiting
+	 * @param null|Closure(float):void $onTimeout
+	 */
 	public function __construct(
-		/** @var Closure(Closure():void, Closure():void, Closure(float):void, Closure(?Closure(float):void):void):void */
 		private Closure  $task,
 		private Closure  $cancelTask,
 		private Closure  $changeToWaiting,
 		float            $timeout = PHP_FLOAT_MAX,
-		/** @var null|Closure(float $exceed):void $onTimeout */
 		private ?Closure $onTimeout = null
 	) {
 		$this->timeoutTime = hrtime(true) + ($timeout * 1000000);
