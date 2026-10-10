@@ -12,7 +12,6 @@ use libasync\runtime\AsyncExecutionEnvironment;
 use libasync\runtime\AsyncRuntime;
 use pocketmine\utils\Utils as PMMPUtils;
 use function libasync\may_drop;
-use const bootstrap\PRODUCTION;
 
 final class Await {
 	private function __construct() { }
@@ -162,7 +161,7 @@ final class Await {
 	 * @return AwaitResult The result of the execution.
 	 */
 	public static function do(Closure|Generator $block, ?EventLoop $loop = null) : AwaitResult {
-		if (!PRODUCTION && $block instanceof Closure) {
+		if (!\constant('bootstrap\\PRODUCTION') && $block instanceof Closure) {
 			PMMPUtils::validateCallableSignature(new CallbackType(new ReturnType()), $block);
 		}
 

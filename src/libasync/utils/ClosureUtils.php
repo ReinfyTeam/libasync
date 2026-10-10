@@ -12,14 +12,13 @@ use ReflectionFunction;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionUnionType;
-use const bootstrap\PRODUCTION;
 
 Serializer::init();
 final class ClosureUtils {
 	private function __construct() { }
 
 	public static function validateParamCount(\Closure $c, int $expected) : void {
-		if (PRODUCTION) {
+		if (\constant('bootstrap\\PRODUCTION')) {
 			return;
 		}
 		$ref = new \ReflectionFunction($c);
@@ -30,7 +29,7 @@ final class ClosureUtils {
 	}
 
 	public static function validateStatic(\Closure $c) : void {
-		if (PRODUCTION) {
+		if (\constant('bootstrap\\PRODUCTION')) {
 			return;
 		}
 		$ref = new \ReflectionFunction($c);
@@ -43,7 +42,7 @@ final class ClosureUtils {
 	 * @throws \RuntimeException
 	 */
 	public static function validateThreadSafety(\Closure $c, int $offset = 0) : void {
-		if (PRODUCTION) {
+		if (\constant('bootstrap\\PRODUCTION')) {
 			return;
 		}
 		try {

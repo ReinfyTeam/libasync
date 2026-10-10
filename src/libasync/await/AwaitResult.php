@@ -13,7 +13,6 @@ use pocketmine\utils\TextFormat;
 use pocketmine\utils\Utils;
 use prokits\utils\StringFormat;
 use Throwable;
-use const bootstrap\PRODUCTION;
 
 /**
  * AwaitResult wraps the result of an asynchronous coroutine execution.
@@ -71,7 +70,7 @@ class AwaitResult {
 		private readonly Closure $createCoroutine,
 		private readonly Closure $onCreation
 	) {
-		if (!PRODUCTION) {
+		if (!\constant('bootstrap\\PRODUCTION')) {
 			ClosureUtils::noCyclic($this->createCoroutine, $this->onCreation);
 			ClosureUtils::noCyclic($this->createCoroutine, $this);
 			ClosureUtils::noCyclic($this->onCreation, $this);
@@ -89,7 +88,7 @@ class AwaitResult {
 		$createCoroutine = $this->createCoroutine;
 		$onCreation = $this->onCreation;
 
-		if (!PRODUCTION) {
+		if (!\constant('bootstrap\\PRODUCTION')) {
 			GlobalLogger::get()->error(
 				"\n--- Await Start ---\n" .
 				implode("\n", $stackTrace) .

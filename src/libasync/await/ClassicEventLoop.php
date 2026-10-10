@@ -44,7 +44,7 @@ class ClassicEventLoop implements EventLoop {
 	public function add(Closure $c, int $timeoutMicrosecond = PHP_INT_MAX, ?Closure $onTimeout = null) : EventLoopTask {
 		$id = spl_object_id($c);
 		$weak = weak($this);
-		if (!\bootstrap\PRODUCTION) {
+		if (!\constant('bootstrap\\PRODUCTION')) {
 			ClosureUtils::noCyclic($c, $this);
 		}
 		$task = new EventLoopTask(

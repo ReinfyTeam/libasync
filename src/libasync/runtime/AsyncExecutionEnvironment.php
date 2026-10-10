@@ -7,7 +7,6 @@ use libasync\utils\ClosureUtils;
 use pmmp\thread\ThreadSafe;
 use pocketmine\utils\Utils;
 use Throwable;
-use const bootstrap\PRODUCTION;
 
 /**
  * AsyncExecutionEnvironment provides a thread-safe execution context for asynchronous
@@ -56,7 +55,7 @@ class AsyncExecutionEnvironment extends ThreadSafe {
 		public readonly Closure $argsCtor,
 		public readonly Closure $argsDtor,
 	) {
-		if (!PRODUCTION) {
+		if (!\constant('bootstrap\\PRODUCTION')) {
 			Utils::validateCallableSignature(static fn() : array => [], $this->argsCtor);
 			ClosureUtils::validateStatic($this->argsDtor);
 		}
