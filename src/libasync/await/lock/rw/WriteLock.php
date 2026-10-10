@@ -21,6 +21,7 @@ readonly class WriteLock implements Lock {
 
 	public function isLocked() : bool { return $this->writing->value; }
 
+	/** @return Generator<int,mixed,mixed,void> */
 	public function lock() : Generator {
 		while ($this->writing->value || $this->reading->value) {
 			yield AwaitSignal::SIG_WAIT;

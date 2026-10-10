@@ -49,14 +49,13 @@ final class Await {
 	/**
 	 * Converts a closure into a generator for asynchronous execution.
 	 *
-	 * @template T
-	 * @param Closure():T|Generator<int,mixed,mixed,T> $f The closure to convert.
-	 * @return Generator<int,mixed,mixed,T> The generator that yields from the closure result.
+	 * @param Closure():mixed $f The closure to convert.
+	 * @return Generator<int,mixed,mixed,mixed> The generator that yields from the closure result.
 	 */
 	public static function f2c(Closure $f) : Generator {
 		$v = $f();
 		if ($v instanceof Generator) {
-			/** @var Generator<int,mixed,mixed,T> $v */
+			/** @var Generator<int,mixed,mixed,mixed> $v */
 			return yield from $v;
 		}
 		return $v;

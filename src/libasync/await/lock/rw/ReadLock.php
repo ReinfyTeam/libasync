@@ -19,6 +19,7 @@ readonly class ReadLock implements Lock {
 	) {
 	}
 
+	/** @return Generator<int,mixed,mixed,void> */
 	public function lock() : Generator {
 		while ($this->writing->value) {
 			yield AwaitSignal::SIG_WAIT;
