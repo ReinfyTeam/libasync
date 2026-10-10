@@ -23,7 +23,12 @@ final class SerialBus implements BusInterface {
 		foreach (ClosureUtils::parseSubscriber($handler) as $type) {
 			$this->handler[$type][$id] = $handler;
 			$combine[] = function() use ($id, $type) {
-				unset($this->handler[$type][$id]);
+				if(isset($this->handler[$type][$id])) {
+					unset($this->handler[$type][$id]);
+				}
+				if(isset($this->handler[$type]) && $this->handler[$type] === []) {
+					unset($this->handler[$type]);
+				}
 			};
 		}
 		return static function() use ($combine) {
