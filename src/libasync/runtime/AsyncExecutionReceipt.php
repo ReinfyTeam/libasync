@@ -56,7 +56,7 @@ class AsyncExecutionReceipt {
 	/** @var string[] Stack trace of the async call */
 	protected array $callTrace;
 
-	/** @var \Closure|null Optional notifier to run when finished */
+	/** @var \Closure():void|null Optional notifier to run when finished */
 	protected ?\Closure $notifier = null;
 
 	/**
@@ -114,7 +114,7 @@ class AsyncExecutionReceipt {
 	/**
 	 * Set a notifier callback to be executed when async execution finishes.
 	 *
-	 * @param \Closure|null $notifier
+	 * @param \Closure():void|null $notifier
 	 */
 	public function setNotifier(?\Closure $notifier) : void {
 		$this->notifier = $notifier;
@@ -154,7 +154,7 @@ class AsyncExecutionReceipt {
 	 *
 	 * Usage with `yield` allows other coroutines to continue.
 	 *
-	 * @return Generator
+	 * @return Generator<int,mixed,void,void>
 	 */
 	public function yieldWait() : Generator {
 		while (!$this->isFinished()) {

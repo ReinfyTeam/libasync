@@ -4,16 +4,25 @@ namespace libasync\runtime;
 
 use Closure;
 use libasync\exception\ExecutionExceptionWrapper;
+use pmmp\thread\ThreadSafe;
+use pmmp\thread\ThreadSafeArray;
 use pocketmine\scheduler\AsyncTask;
 use Throwable;
 
+/**
+ * @template T of (scalar|null|ThreadSafe|ThreadSafeArray)
+ */
 class AsyncExecutionTask extends AsyncTask {
 	private const THREAD_LOCAL_RECEIPT = 'receipt';
 	private ?string $error = null;
 
+	/**
+	 * @param AsyncExecutionReceipt<T> $receipt
+	 * @param Closure(mixed ...):T $func
+	 */
 	public function __construct(
-		AsyncExecutionReceipt                       $receipt,
-		private readonly Closure                    $func,
+		AsyncExecutionReceipt $receipt,
+		private readonly Closure $func,
 		private readonly ?AsyncExecutionEnvironment $env,
 	) {
 		$this->storeLocal(self::THREAD_LOCAL_RECEIPT, $receipt);
@@ -46,7 +55,11 @@ class AsyncExecutionTask extends AsyncTask {
 			}
 			$receipt->setError($error);
 		} else {
-			$receipt->setResult($this->getResult());
+			$result = $this->getResult();
+			if (!is_scalar($result) && $result !== null && !$result instanceof ThreadSafe && !$result instanceof ThreadSafeArray) {
+				throw new \UnexpectedValueException('Asynchronous task returned an unsupported result type');
+			}
+			$receipt->setResult($result);
 		}
 	}
 }
