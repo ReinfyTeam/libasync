@@ -18,6 +18,9 @@ Install the library in a PHP project with Composer:
 composer require reinfyteam/libasync
 ```
 
+Composer autoload registers the library's public function entry points, so
+Composer consumers do not need to require internal function files manually.
+
 For PocketMine-MP, load the plugin through the project's supported plugin or
 virion packaging workflow. The build metadata is still being validated against
 [DevTools](https://github.com/NhanAZ/DevTools); the current repository does not

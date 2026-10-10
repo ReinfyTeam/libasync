@@ -14,7 +14,11 @@
         "psr-4": {
             "libasync\\": "src/libasync",
             "phantom\\": "src/phantom"
-        }
+        },
+        "files": [
+            "src/phantom/functions.php",
+            "src/libasync/functions.php"
+        ]
     },
     "authors": [
         {
