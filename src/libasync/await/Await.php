@@ -131,7 +131,7 @@ final class Await {
 	 * Handles any exceptions that might occur during execution.
 	 *
 	 * @template T of (scalar|null|\pmmp\thread\ThreadSafe|\pmmp\thread\ThreadSafeArray)
-	 * @param Closure(mixed ...):T $do The closure to execute asynchronously.
+	 * @param Closure():T $do The closure to execute asynchronously.
 	 * @param AsyncRuntime|null $runtime The runtime environment to use.
 	 * @param AsyncExecutionEnvironment|null $env The execution environment to use.
 	 * @return Generator<int,mixed,mixed,T|null> The result of the asynchronous execution.

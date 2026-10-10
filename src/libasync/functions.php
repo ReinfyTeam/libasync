@@ -65,11 +65,11 @@ namespace libasync {
 	 * // $arrayResult would be ['a' => 1, 'b' => 2]
 	 * ```
 	 *
-	 * @template T
+	 * @template T of (scalar|null|\pmmp\thread\ThreadSafe|\pmmp\thread\ThreadSafeArray)
 	 * @param Closure():T $do The closure to run in a separate thread.
 	 * @param AsyncRuntime|null $runtime Optional async runtime to execute on.
 	 * @param AsyncExecutionEnvironment|null $env Optional execution environment.
-	 * @return Generator<void,mixed,void,T>|T Either a generator for coroutine or the result directly.
+	 * @return Generator<int,mixed,mixed,T|null> The asynchronous execution result.
 	 * @generator-throw ExecutionException If execution fails.
 	 */
 	function thread(Closure $do, ?AsyncRuntime $runtime = null, ?AsyncExecutionEnvironment $env = null) {
