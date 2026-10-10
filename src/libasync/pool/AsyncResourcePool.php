@@ -16,7 +16,7 @@ class AsyncResourcePool implements ResourcePoolInterface {
 		private readonly Closure $prepareFunc,
 		/** @var Closure(T $res,bool $force):void */
 		private readonly Closure $freeFunc,
-		/** @var Closure(T $res,Closure $push):bool */
+		/** @var Closure(T $res,Closure(T $res):void $push):bool */
 		private readonly Closure $recycleFunc,
 	) {
 
@@ -25,9 +25,6 @@ class AsyncResourcePool implements ResourcePoolInterface {
 	protected int $capacity;
 	/** @var T[] */
 	private array $resources = [];
-	/** @var \SplDoublyLinkedList<T> */
-	private \SplDoublyLinkedList $list;
-
 	public function setCapacity(int $capacity) : void { $this->capacity = $capacity; }
 
 	public function prepare(int $count) : void {
@@ -45,6 +42,7 @@ class AsyncResourcePool implements ResourcePoolInterface {
 		}
 		$res = array_pop($this->resources);
 		Utils::assumeNotFalse($res !== null);
+		/** @var T $res */
 		return $this->packRes($res);
 	}
 
@@ -57,13 +55,14 @@ class AsyncResourcePool implements ResourcePoolInterface {
 
 	/**
 	 * @param T $res
+	 * @return ResourceRef<T>
 	 */
 	private function packRes($res) : ResourceRef {
 		return new ResourceRef(
 			res: $res,
 			recyclable: true,
-			freeFunc: function($res) : void {
-				($this->freeFunc)($res);
+			freeFunc: function($res, bool $force = false) : void {
+				($this->freeFunc)($res, $force);
 				$this->prepare(1);
 			},
 			recycleFunc: function($res) : bool {
