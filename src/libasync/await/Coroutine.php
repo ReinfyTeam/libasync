@@ -23,6 +23,7 @@ class Coroutine {
 	public static ?self $RUNNING = null;
 	/** @var array<int,self> */
 	public static array $joinedCoroutine = [];
+	private ?Generator $generator;
 	/** @var array<int|string, string> */
 	private readonly array $callTrace;
 	private readonly string $name;
@@ -35,10 +36,11 @@ class Coroutine {
 
 	/** @param Closure(Throwable):void|null $errorHandler */
 	public function __construct(
-		private Generator $generator,
+		Generator $generator,
 		private ?Closure  $errorHandler,
 		private bool      $joined
 	) {
+		$this->generator = $generator;
 		$this->callTrace = PMMPUtils::printableCurrentTrace(self::SKIP_FRAMES);
 		$this->name = $this->determineCallerName();
 
@@ -127,6 +129,9 @@ class Coroutine {
 	/** @param Closure():Closure $wakeupMode */
 	private function executeInternal(TimingsHandler $timings, TimingsHandler $resumeTimings, Closure $wakeupMode) : bool {
 		$gen = $this->generator;
+		if ($gen === null) {
+			return true;
+		}
 
 		if (!$gen->valid() || !$this->processTraps()) {
 			$timings->stopTiming();
@@ -207,7 +212,7 @@ class Coroutine {
 
 	/** @param Closure():void $break */
 	private function terminate(Closure $break) : void {
-		if (!isset($this->generator)) {
+		if ($this->generator === null) {
 			return;
 		}
 		unset(self::$joinedCoroutine[spl_object_id($this)]);
@@ -217,7 +222,8 @@ class Coroutine {
 		}
 
         $this->taskRef = null;
-        unset($this->generator, $this->deferHandlers, $this->errorHandler, $this->trapHandlers);
+        $this->generator = null;
+        unset($this->deferHandlers, $this->errorHandler, $this->trapHandlers);
 
         $break();
     }
@@ -260,6 +266,9 @@ class Coroutine {
     }
 
 	private function handleTimeout(float $exceed) : void {
+		if ($this->generator === null) {
+			return;
+		}
 		unset(self::$joinedCoroutine[spl_object_id($this)]);
 
 		$timeoutException = new TimeoutException("Coroutine timed out, exceed=$exceed");
