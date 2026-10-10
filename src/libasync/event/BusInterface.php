@@ -8,6 +8,7 @@ namespace libasync\event;
 interface BusInterface {
 	/**
 	 * @param \Closure(T $value):void $handler
+	 * @return \Closure():void
 	 */
 	public function subscribe(\Closure $handler) : \Closure;
 

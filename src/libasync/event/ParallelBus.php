@@ -13,7 +13,9 @@ use pmmp\thread\ThreadSafeArray;
  * @implements BusInterface<T>
  */
 class ParallelBus extends ThreadSafe implements BusInterface {
+	/** @var ThreadSafeArray<int, string> */
 	private ThreadSafeArray $buffer;
+	/** @var ThreadSafeArray<string, ThreadSafeArray<int, Closure(T):void>> */
 	private ThreadSafeArray $handler;
 
 	public function __construct() {
@@ -41,6 +43,7 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 
 	/**
 	 * @param \Closure(T $topic):void $handler
+	 * @return Closure():void
 	 */
 	public function subscribe(Closure $handler) : Closure {
 		ClosureUtils::validateThreadSafety($handler);
@@ -65,7 +68,8 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 		$this->buffer->synchronized(fn() => $this->buffer[] = Utils::smartSerialize($value));
 	}
 
-	public function hasSubscriber($value) : bool {
+	/** @param T $value */
+	public function hasSubscriber(mixed $value) : bool {
 		return $this->synchronized(fn() => isset($this->handler[get_debug_type($value)]));
 	}
 

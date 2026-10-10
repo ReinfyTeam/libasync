@@ -15,6 +15,7 @@ final class SerialBus implements BusInterface {
 
 	/**
 	 * @param \Closure(T $topic):void $handler
+	 * @return Closure():void
 	 */
 	public function subscribe(Closure $handler) : Closure {
 		$combine = [];

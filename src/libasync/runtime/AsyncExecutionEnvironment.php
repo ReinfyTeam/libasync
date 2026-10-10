@@ -65,14 +65,14 @@ class AsyncExecutionEnvironment extends ThreadSafe {
 	/**
 	 * Create arguments/resources for execution.
 	 *
-	 * @return array The array of arguments
+	 * @return array<int, mixed> The array of arguments
 	 */
 	public function createArgs() : array { return ($this->argsCtor)(); }
 
 	/**
 	 * Destroy previously created arguments/resources.
 	 *
-	 * @param array $args Arguments/resources returned from `createArgs()`
+	 * @param array<int, mixed> $args Arguments/resources returned from `createArgs()`
 	 */
 	public function destroyArgs(array $args) : void { ($this->argsDtor)(...$args); }
 
@@ -81,8 +81,8 @@ class AsyncExecutionEnvironment extends ThreadSafe {
 	 *
 	 * Automatically creates and destroys resources.
 	 *
-	 * @param Closure $f Closure to execute. Arguments created by argsCtor are prepended.
-	 * @param array $injected Additional arguments to pass to $f
+	 * @param Closure(mixed ...):mixed $f Closure to execute. Arguments created by argsCtor are prepended.
+	 * @param array<int, mixed> $injected Additional arguments to pass to $f
 	 * @return mixed The return value of the closure
 	 * @throws Throwable Re-throws any exception thrown by the closure
 	 */
