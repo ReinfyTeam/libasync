@@ -28,7 +28,11 @@ class AsyncExecutionTask extends AsyncTask {
 			}
 			$this->setResult($result);
 		} catch (Throwable $err) {
-			$this->error = igbinary_serialize(ExecutionExceptionWrapper::wrap($err));
+			$error = igbinary_serialize(ExecutionExceptionWrapper::wrap($err));
+			if (!is_string($error)) {
+				throw new \UnexpectedValueException('Unable to serialize asynchronous execution error');
+			}
+			$this->error = $error;
 		}
 	}
 
@@ -36,7 +40,11 @@ class AsyncExecutionTask extends AsyncTask {
 		$receipt = $this->fetchLocal(self::THREAD_LOCAL_RECEIPT);
 		assert($receipt instanceof AsyncExecutionReceipt);
 		if ($this->error !== null) {
-			$receipt->setError(igbinary_unserialize($this->error));
+			$error = igbinary_unserialize($this->error);
+			if (!$error instanceof ExecutionExceptionWrapper) {
+				throw new \UnexpectedValueException('Serialized asynchronous execution error has an invalid type');
+			}
+			$receipt->setError($error);
 		} else {
 			$receipt->setResult($this->getResult());
 		}

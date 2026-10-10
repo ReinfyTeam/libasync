@@ -87,7 +87,11 @@ class AsyncExecutionReceipt {
 		if ($this->error === null) {
 			return null;
 		}
-		return igbinary_unserialize($this->error);
+		$error = igbinary_unserialize($this->error);
+		if (!$error instanceof ExecutionExceptionWrapper) {
+			throw new \UnexpectedValueException('Serialized execution error has an invalid type');
+		}
+		return $error;
 	}
 
 	/**

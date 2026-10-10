@@ -39,6 +39,9 @@ class ThreadSafeSimpleLogger extends ThreadSafeLogger {
 	}
 
 	public function log($level, $message) {
+		if (!is_string($level)) {
+			throw new \InvalidArgumentException('Log level must be a string');
+		}
 		echo "[" . strtoupper($level) . "] " . $message . PHP_EOL;
 	}
 

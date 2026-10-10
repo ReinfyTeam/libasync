@@ -7,9 +7,11 @@ use libasync\utils\ClosureUtils;
 
 /**
  * @template T
+ * @implements BusInterface<T>
  */
 final class SerialBus implements BusInterface {
-	private array $handler;
+	/** @var array<string, array<int, Closure(T):void>> */
+	private array $handler = [];
 
 	/**
 	 * @param \Closure(T $topic):void $handler
@@ -43,7 +45,7 @@ final class SerialBus implements BusInterface {
 		}
 	}
 
-	public function hasSubscriber($value) : bool {
+	public function hasSubscriber(mixed $value) : bool {
 		return isset($this->handler[get_debug_type($value)]);
 	}
 

@@ -21,6 +21,7 @@ final class ExecutionExceptionWrapper {
 	) {
 	}
 
+	/** @param array<int|string, string> $trace */
 	public static function from(
 		string $class,
 		string $message,
@@ -29,13 +30,19 @@ final class ExecutionExceptionWrapper {
 		string $file,
 		int    $line
 	) : self {
-		return new self(
-			$class, $message, igbinary_serialize($trace), $code, $file, $line
-		);
+		$traceSerialized = igbinary_serialize($trace);
+		if (!is_string($traceSerialized)) {
+			throw new \UnexpectedValueException('Unable to serialize execution trace');
+		}
+		return new self($class, $message, $traceSerialized, $code, $file, $line);
 	}
 
 	public static function wrap(Throwable $thr) : self {
-		return new self($thr::class, $thr->getMessage(), igbinary_serialize(PMMPUtils::printableTrace($thr->getTrace())), $thr->getCode(), $thr->getFile(), $thr->getLine());
+		$traceSerialized = igbinary_serialize(PMMPUtils::printableTrace($thr->getTrace()));
+		if (!is_string($traceSerialized)) {
+			throw new \UnexpectedValueException('Unable to serialize execution trace');
+		}
+		return new self($thr::class, $thr->getMessage(), $traceSerialized, $thr->getCode(), $thr->getFile(), $thr->getLine());
 	}
 
 	public function is(string $class) : bool {
@@ -50,12 +57,10 @@ final class ExecutionExceptionWrapper {
 		$errstr = preg_replace('/\s+/', ' ', trim($e->getMessage()));
 
 		$errno = $e->getCode();
-		if (is_int($errno)) {
-			try {
-				$errno = ErrorTypeToStringMap::get($errno);
-			} catch (InvalidArgumentException) {
-				//pass
-			}
+		try {
+			$errno = ErrorTypeToStringMap::get($errno);
+		} catch (InvalidArgumentException) {
+			// Keep non-error exception codes numeric.
 		}
 
 		$errfile = Filesystem::cleanPath($e->getFile());
@@ -64,8 +69,11 @@ final class ExecutionExceptionWrapper {
 		return $e->getClass() . ": \"$errstr\" ($errno) in \"$errfile\" at line $errline";
 	}
 
+	/** @param array<int|string, string>|ThreadSafeArray<int|string, string> $callTrace */
 	public function printWithCallTrace(ThreadSafeArray|array $callTrace, ?Logger $logger = null) : void {
 		$logger ??= \GlobalLogger::get();
+		/** @var array<int|string, string> $callTrace */
+		$callTrace = (array) $callTrace;
 		$logger->critical(self::printPromiseExceptionMessage($this));
 		$logger->critical(
 			"\n--- Caller Stack trace ---\n" .
@@ -94,7 +102,18 @@ final class ExecutionExceptionWrapper {
 		return $this->class;
 	}
 
+	/** @return array<int|string, string> */
 	public function getTrace() : array {
-		return igbinary_unserialize($this->traceSerialized);
+		$trace = igbinary_unserialize($this->traceSerialized);
+		if (!is_array($trace)) {
+			throw new \UnexpectedValueException('Serialized execution trace is not an array');
+		}
+		foreach ($trace as $frame) {
+			if (!is_string($frame)) {
+				throw new \UnexpectedValueException('Serialized execution trace contains a non-string frame');
+			}
+		}
+		/** @var array<int|string, string> $trace */
+		return $trace;
 	}
 }

@@ -16,6 +16,9 @@ final class Utils {
 		if ($m instanceof ThreadSafe) {
 			return $m;
 		}
+		if (!is_string($m)) {
+			throw new \InvalidArgumentException('Serialized value must be a string or ThreadSafe object');
+		}
 		return igbinary_unserialize($m);
 	}
 }

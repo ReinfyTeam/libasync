@@ -16,7 +16,7 @@ interface BusInterface {
 	 */
 	public function publish(mixed $value) : void;
 
-	public function hasSubscriber($value) : bool;
+	public function hasSubscriber(mixed $value) : bool;
 
 	public function clear() : void;
 }

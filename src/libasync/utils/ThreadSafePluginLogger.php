@@ -4,13 +4,12 @@ namespace libasync\utils;
 
 use pmmp\thread\ThreadSafeArray;
 use pocketmine\thread\log\ThreadSafeLogger;
-use pocketmine\thread\log\ThreadSafeLoggerAttachment;
 
 class ThreadSafePluginLogger extends ThreadSafePrefixedLogger implements \AttachableLogger {
 
 	/**
 	 * @var \Closure[]
-	 * @phpstan-var ThreadSafeLoggerAttachment[]
+	 * @phpstan-var ThreadSafeArray<int, \Closure(mixed, string): void>
 	 */
 	private ThreadSafeArray $attachments;
 
@@ -20,14 +19,14 @@ class ThreadSafePluginLogger extends ThreadSafePrefixedLogger implements \Attach
 	}
 
 	/**
-	 * @phpstan-param ThreadSafeLoggerAttachment $attachment
+	 * @phpstan-param \Closure(mixed, string): void $attachment
 	 */
 	public function addAttachment(\Closure $attachment) {
 		$this->attachments[spl_object_id($attachment)] = $attachment;
 	}
 
 	/**
-	 * @phpstan-param ThreadSafeLoggerAttachment $attachment
+	 * @phpstan-param \Closure(mixed, string): void $attachment
 	 */
 	public function removeAttachment(\Closure $attachment) {
 		unset($this->attachments[spl_object_id($attachment)]);
@@ -37,13 +36,17 @@ class ThreadSafePluginLogger extends ThreadSafePrefixedLogger implements \Attach
 		$this->attachments = new ThreadSafeArray();
 	}
 
-	public function getAttachments() {
-		return $this->attachments;
+	/** @return array<int, \Closure(mixed, string): void> */
+	public function getAttachments() : array {
+		$attachments = (array) $this->attachments;
+		/** @var array<int, \Closure(mixed, string): void> $attachments */
+		return $attachments;
 	}
 
 	public function log($level, $message) {
 		parent::log($level, $message);
 		foreach ($this->attachments as $attachment) {
+			/** @var \Closure(mixed, string): void $attachment */
 			$attachment($level, $message);
 		}
 	}
