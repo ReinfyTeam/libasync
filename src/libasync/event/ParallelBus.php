@@ -13,7 +13,7 @@ use pmmp\thread\ThreadSafeArray;
  * @implements BusInterface<T>
  */
 class ParallelBus extends ThreadSafe implements BusInterface {
-	/** @var ThreadSafeArray<int, string> */
+	/** @var ThreadSafeArray<int, ThreadSafe|string> */
 	private ThreadSafeArray $buffer;
 	/** @var ThreadSafeArray<string, ThreadSafeArray<int, Closure(T):void>> */
 	private ThreadSafeArray $handler;
@@ -24,6 +24,7 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 	}
 
 	public function process() : void {
+		/** @var array<int, array{0: Closure(T):void, 1:T}> $pending */
 		$pending = [];
 		$this->buffer->synchronized(function() use (&$pending) : void {
 			$this->handler->synchronized(function() use (&$pending) : void {
@@ -31,6 +32,9 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 					$buf = $this->buffer->pop();
 					$val = Utils::smartDeserialize($buf);
 					foreach ($this->handler[get_debug_type($val)] ?? [] as $handler) {
+						if (!$handler instanceof Closure) {
+							throw new \UnexpectedValueException('Parallel bus handler has an invalid type');
+						}
 						$pending[] = [$handler, $val];
 					}
 				}
@@ -51,6 +55,9 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 			$combine = [];
 			$id = spl_object_id($handler);
 			foreach (ClosureUtils::parseSubscriber($handler) as $type) {
+				if (!isset($this->handler[$type])) {
+					$this->handler[$type] = new ThreadSafeArray();
+				}
 				$this->handler[$type][$id] = $handler;
 				$combine[] = function() use ($id, $type) {
 					unset($this->handler[$type][$id]);
@@ -65,7 +72,13 @@ class ParallelBus extends ThreadSafe implements BusInterface {
 	}
 
 	public function publish(mixed $value) : void {
-		$this->buffer->synchronized(fn() => $this->buffer[] = Utils::smartSerialize($value));
+		$this->buffer->synchronized(function() use ($value) : void {
+			$encoded = Utils::smartSerialize($value);
+			if (!$encoded instanceof ThreadSafe && !is_string($encoded)) {
+				throw new \UnexpectedValueException('Unable to serialize parallel bus payload');
+			}
+			$this->buffer[] = $encoded;
+		});
 	}
 
 	/** @param T $value */
