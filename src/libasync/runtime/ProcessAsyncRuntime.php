@@ -6,7 +6,9 @@ use Closure;
 use Composer\Autoload\ClassLoader;
 use Exception;
 use libasync\await\Await;
+use libasync\exception\ExecutionExceptionWrapper;
 use libasync\utils\ClosureUtils;
+use pmmp\thread\ThreadSafe;
 use pocketmine\Server;
 use pocketmine\utils\Utils;
 use RuntimeException;
@@ -27,7 +29,7 @@ class ProcessAsyncRuntime implements AsyncRuntime {
 
 		try {
 			$serializedClosure = \Opis\Closure\serialize($closure);
-			$envData = $env ? igbinary_serialize([\Opis\Closure\serialize($env->argsCtor), \Opis\Closure\serialize($env->argsDtor)]) : null;
+			$envData = $env !== null ? igbinary_serialize([\Opis\Closure\serialize($env->argsCtor), \Opis\Closure\serialize($env->argsDtor)]) : null;
 		} catch (Exception $e) {
 			throw new RuntimeException("Failed to serialize closure or environment data: " . $e->getMessage());
 		}
@@ -37,11 +39,11 @@ class ProcessAsyncRuntime implements AsyncRuntime {
 				PHP_BINARY,
 				__DIR__ . '/process.php',
 				$this->getAutoloaderData(),
-				base64_encode($serializedClosure), base64_encode($envData),
+				base64_encode($serializedClosure), base64_encode($envData ?? ''),
 			],
 			[
-				1 => ['socket'],
-				2 => fopen("php://stderr", "wb"),
+				1 => ['pipe', 'w'],
+				2 => Utils::assumeNotFalse(fopen("php://stderr", "wb"), "Unable to open stderr"),
 			],
 			$pipes
 		), "Something has gone horribly wrong");
@@ -50,15 +52,28 @@ class ProcessAsyncRuntime implements AsyncRuntime {
 			throw new RuntimeException("Failed to start subprocess.");
 		}
 
-		$stdin = $pipes[1];
-		stream_set_blocking($stdin, 0);
+		$stdin = $pipes[1] ?? null;
+		if (!is_resource($stdin)) {
+			throw new RuntimeException("Process did not provide an output pipe.");
+		}
+		stream_set_blocking($stdin, false);
 		async(static function() use ($process, $rec, $stdin) {
 			$output = yield from Await::stream($stdin);
 			try {
-				[$success, $result] = igbinary_unserialize($output);
+				$decoded = igbinary_unserialize($output);
+				if (!is_array($decoded) || count($decoded) !== 2 || !array_key_exists(0, $decoded) || !array_key_exists(1, $decoded) || !is_bool($decoded[0])) {
+					throw new RuntimeException("Invalid subprocess output.");
+				}
+				[$success, $result] = $decoded;
 				if ($success) {
+					if (!is_scalar($result) && $result !== null && !$result instanceof ThreadSafe) {
+						throw new \UnexpectedValueException('Subprocess returned an unsupported result type');
+					}
 					$rec->setResult($result);
 				} else {
+					if ($result !== null && !$result instanceof ExecutionExceptionWrapper) {
+						throw new \UnexpectedValueException('Subprocess returned an invalid execution error');
+					}
 					$rec->setError($result);
 				}
 			} catch (Exception $e) {
@@ -84,6 +99,9 @@ class ProcessAsyncRuntime implements AsyncRuntime {
 			$composer = [];
 			foreach (ClassLoader::getRegisteredLoaders() as $loader) {
 				$vendor = (fn() => $this->vendorDir)->call($loader);
+				if (!is_string($vendor)) {
+					throw new RuntimeException('Composer loader has an invalid vendor directory');
+				}
 				$composer[] = ($vendor . '/autoload.php');
 			}
 			$this->autoloaderData = base64_encode(json_encode([$lookupData, $psrData, $composer], JSON_THROW_ON_ERROR));

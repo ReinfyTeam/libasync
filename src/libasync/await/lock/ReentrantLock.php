@@ -12,7 +12,7 @@ class ReentrantLock implements Lock {
 	}
 
 	public function lock() : Generator {
-		return yield from $this->sema->acquire();
+		yield from $this->sema->acquire();
 	}
 
 	public function unlock() : void {

@@ -42,7 +42,7 @@ class MutexRefCell {
 	 * @param Closure(Closure(T $v):void $set,Closure():T $get):TReturn $func
 	 * @return Generator<int,mixed,mixed,bool>
 	 */
-	public function trySet(Closure $func) : bool|Generator {
+	public function trySet(Closure $func) : Generator {
 		$w = $this->lock->write();
 		if ($w->isLocked()) {
 			return false;

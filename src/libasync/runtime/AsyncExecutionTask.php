@@ -56,7 +56,7 @@ class AsyncExecutionTask extends AsyncTask {
 			$receipt->setError($error);
 		} else {
 			$result = $this->getResult();
-			if (!is_scalar($result) && $result !== null && !$result instanceof ThreadSafe && !$result instanceof ThreadSafeArray) {
+			if (!is_scalar($result) && $result !== null && !$result instanceof ThreadSafe) {
 				throw new \UnexpectedValueException('Asynchronous task returned an unsupported result type');
 			}
 			$receipt->setResult($result);

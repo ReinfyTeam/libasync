@@ -13,6 +13,7 @@ class Semaphore {
 	) {
 	}
 
+	/** @return Generator<int,mixed,mixed,void> */
 	public function acquire() : Generator {
 		while ($this->sema < -$this->maxOwningThread) {
 			yield AwaitSignal::SIG_WAIT;
