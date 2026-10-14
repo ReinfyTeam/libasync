@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "66b724b5cac6b86d523bef7c50627d54",
+    "content-hash": "3c1b4be77890223306453d53d7f4e137",
     "packages": [
         {
             "name": "opis/closure",
@@ -259,16 +259,16 @@
         },
         {
             "name": "axolotl-pm/pocketmine-mp",
-            "version": "dev-stable",
+            "version": "5.49.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/axolotl-pm/PocketMine-MP",
-                "reference": "9794a23b9c29b6f60c513f42735c50e371e9393a"
+                "reference": "dfe0d07e48a9e8d5a4a242fa43ff1cd3b743a955"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/axolotl-pm/PocketMine-MP/zipball/9794a23b9c29b6f60c513f42735c50e371e9393a",
-                "reference": "9794a23b9c29b6f60c513f42735c50e371e9393a",
+                "url": "https://api.github.com/repos/axolotl-pm/PocketMine-MP/zipball/dfe0d07e48a9e8d5a4a242fa43ff1cd3b743a955",
+                "reference": "dfe0d07e48a9e8d5a4a242fa43ff1cd3b743a955",
                 "shasum": ""
             },
             "require": {
@@ -330,7 +330,6 @@
                 "phpstan/phpstan-strict-rules": "^2.0.0",
                 "phpunit/phpunit": "^10.5.24"
             },
-            "default-branch": true,
             "type": "project",
             "autoload": {
                 "psr-4": {
@@ -372,7 +371,7 @@
             ],
             "description": "A server software for Minecraft: Bedrock Edition written in PHP",
             "homepage": "https://pmmp.io",
-            "time": "2026-10-05T06:45:15+00:00"
+            "time": "2026-09-18T01:47:35+00:00"
         },
         {
             "name": "axolotl-pm/xoroshiro128pp",
@@ -1248,9 +1247,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "axolotl-pm/pocketmine-mp": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

@@ -35,7 +35,7 @@
         "php": "^8.2"
     },
     "require-dev": {
-        "axolotl-pm/pocketmine-mp": "dev-stable",
+        "axolotl-pm/pocketmine-mp": "5.49.1",
         "phpstan/phpstan": "^2.3"
     },
     "minimum-stability": "dev",
