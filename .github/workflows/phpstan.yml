@@ -10,19 +10,19 @@ permissions:
 jobs:
   phpstan:
     name: Run PHPStan at maximum level
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Set up PHP environment
-        uses: shivammathur/setup-php@16011a795d747d5f45038f96371c3b98aec5669d
+        uses: shivammathur/setup-php@5a89ae6dd61c772780c51d7542f4374d76990a0b
         with:
           php-version: "8.2"
 
       - name: Restore Composer package cache
-        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c
+        uses: actions/cache@3edfce9056124e459a23f683a21433670d47daca
         with:
           path: ~/.cache/composer
           key: php-8.2-composer-${{ hashFiles('**/composer.lock') }}
